@@ -179,17 +179,180 @@ export const MOCK_LOCATIONS = [
   { id: "loc-kismayo", name: "Kismayo", level: "region", parent_id: null, active: true },
 ];
 
-export const MOCK_DELIVERY_COMPANIES: Record<string, unknown>[] = [];
-export const MOCK_DRIVERS: Record<string, unknown>[] = [];
-export const MOCK_CARGO_COMPANIES: Record<string, unknown>[] = [];
+export const MOCK_DELIVERY_COMPANIES: Record<string, unknown>[] = [
+  {
+    id: "deliv-banadir",
+    name: "Banadir Express Delivery",
+    phone: "+252 61 500 1122",
+    contact_person: "Cabdi Nuur",
+    notes: "Same-day delivery across Banadir",
+    active: true,
+  },
+  {
+    id: "deliv-hilaac",
+    name: "Hilaac Logistics",
+    phone: "+252 61 500 3344",
+    contact_person: "Faarax Cali",
+    notes: "Motorbike & car fleet",
+    active: true,
+  },
+];
 
-// ZERO DATA CATALOG
-export const MOCK_PRODUCTS: Record<string, unknown>[] = [];
-export const MOCK_PRODUCT_STOCK: Record<string, unknown>[] = [];
+export const MOCK_DRIVERS: Record<string, unknown>[] = [
+  {
+    id: "driver-guuleed",
+    name: "Guuleed Maxamed",
+    phone: "+252 61 700 8899",
+    company_id: "deliv-banadir",
+    vehicle: "Bajaj",
+    active: true,
+  },
+  {
+    id: "driver-xasan",
+    name: "Xasan Warsame",
+    phone: "+252 61 700 6655",
+    company_id: "deliv-hilaac",
+    vehicle: "Mooto",
+    active: true,
+  },
+];
 
-// ZERO DATA CUSTOMERS & BALANCES
-export const MOCK_CUSTOMERS: Record<string, unknown>[] = [];
-export const MOCK_CUSTOMER_BALANCES: Record<string, unknown>[] = [];
+export const MOCK_CARGO_COMPANIES: Record<string, unknown>[] = [
+  {
+    id: "cargo-buraaq",
+    name: "Al-Buraaq Cargo",
+    phone: "+252 61 800 2211",
+    contact_person: "Jaamac Warsame",
+    notes: "Inter-regional cargo (Hargeisa, Garowe, Kismayo)",
+    active: true,
+  },
+  {
+    id: "cargo-barwaaqo",
+    name: "Barwaaqo Cargo",
+    phone: "+252 61 800 4433",
+    contact_person: "Shariif Axmed",
+    notes: "Air and ground transport",
+    active: true,
+  },
+];
+
+// STARTER PRODUCTS & STOCK
+export const MOCK_PRODUCTS: Record<string, unknown>[] = [
+  {
+    id: "prod-sam-a55",
+    name: "Samsung Galaxy A55 5G (128GB)",
+    sku: "SAM-A55-128",
+    barcode: "8806091234567",
+    category_id: null,
+    brand_id: null,
+    unit: "pcs",
+    cost_price: 290.0,
+    sell_price: 340.0,
+    reorder_level: 5,
+    opening_stock: 15,
+    image_url: null,
+    active: true,
+  },
+  {
+    id: "prod-airpods-pro2",
+    name: "Apple AirPods Pro (2nd Gen)",
+    sku: "APP-PRO2",
+    barcode: "194253397472",
+    category_id: null,
+    brand_id: null,
+    unit: "pcs",
+    cost_price: 175.0,
+    sell_price: 210.0,
+    reorder_level: 4,
+    opening_stock: 20,
+    image_url: null,
+    active: true,
+  },
+  {
+    id: "prod-xia-s3",
+    name: "Xiaomi Smart Watch S3 Black",
+    sku: "XIA-S3-BLK",
+    barcode: "6941812756184",
+    category_id: null,
+    brand_id: null,
+    unit: "pcs",
+    cost_price: 95.0,
+    sell_price: 125.0,
+    reorder_level: 3,
+    opening_stock: 18,
+    image_url: null,
+    active: true,
+  },
+  {
+    id: "prod-ank-pb20k",
+    name: "Anker PowerCore 20000mAh Power Bank",
+    sku: "ANK-PB20K",
+    barcode: "796435489123",
+    category_id: null,
+    brand_id: null,
+    unit: "pcs",
+    cost_price: 32.0,
+    sell_price: 45.0,
+    reorder_level: 10,
+    opening_stock: 35,
+    image_url: null,
+    active: true,
+  },
+];
+
+export const MOCK_PRODUCT_STOCK: Record<string, unknown>[] = MOCK_PRODUCTS.map((p) => ({
+  product_id: p.id,
+  name: p.name,
+  sku: p.sku,
+  unit: p.unit,
+  cost_price: p.cost_price,
+  sell_price: p.sell_price,
+  stock: p.opening_stock,
+  reorder_level: p.reorder_level,
+  active: p.active,
+}));
+
+// STARTER CUSTOMERS & BALANCES
+export const MOCK_CUSTOMERS: Record<string, unknown>[] = [
+  {
+    id: "cust-maxamed",
+    name: "Maxamed Cali Cumar",
+    phone: "+252 61 511 2233",
+    email: null,
+    address: "Hodan, Taleex, Muqdisho",
+    credit_limit: 500.0,
+    active: true,
+  },
+  {
+    id: "cust-aamina",
+    name: "Aamina Xuseen Yuusuf",
+    phone: "+252 61 522 3344",
+    email: null,
+    address: "Waberi, Maka Al-Mukarama",
+    credit_limit: 1000.0,
+    active: true,
+  },
+  {
+    id: "cust-cabdiraxmaan",
+    name: "Cabdiraxmaan Shariif",
+    phone: "+252 61 533 4455",
+    email: null,
+    address: "Wadajir, Buulo Xuubeey",
+    credit_limit: 300.0,
+    active: true,
+  },
+];
+
+export const MOCK_CUSTOMER_BALANCES: Record<string, unknown>[] = MOCK_CUSTOMERS.map((c) => ({
+  customer_id: c.id,
+  name: c.name,
+  phone: c.phone,
+  credit_limit: c.credit_limit,
+  current_balance: 0.0,
+  total_sales: 0.0,
+  total_paid: 0.0,
+  active: c.active,
+}));
 
 // ZERO DATA SALES & TRANSACTIONS
 export const MOCK_SALES_OVERVIEW: Record<string, unknown>[] = [];
@@ -287,24 +450,98 @@ export const mockDb: Record<string, Record<string, unknown>[]> = {
   })),
   payment_channels: [...MOCK_PAYMENT_CHANNELS],
   locations: [...MOCK_LOCATIONS],
-  delivery_companies: [],
-  drivers: [],
-  cargo_companies: [],
-  products: [],
-  product_stock: [],
-  customers: [],
-  customer_balances: [],
+  delivery_companies: [...MOCK_DELIVERY_COMPANIES],
+  drivers: [...MOCK_DRIVERS],
+  cargo_companies: [...MOCK_CARGO_COMPANIES],
+  products: [...MOCK_PRODUCTS],
+  product_stock: [...MOCK_PRODUCT_STOCK],
+  customers: [...MOCK_CUSTOMERS],
+  customer_balances: [...MOCK_CUSTOMER_BALANCES],
   sales: [],
   sales_overview: [],
   sale_items: [],
   purchases: [],
+  purchases_overview: [],
   purchase_items: [],
+  suppliers: [
+    {
+      id: "sup-dubai",
+      name: "Dubai General Trading LLC",
+      phone: "+971 4 223 3445",
+      email: "orders@dubaitrading.ae",
+      address: "Deira, Dubai, UAE",
+      contact_person: "Khaalid Cumar",
+      opening_balance: 0.0,
+      active: true,
+      created_at: new Date().toISOString(),
+    },
+    {
+      id: "sup-mogadishu",
+      name: "Al-Nour Electronics Wholesale",
+      phone: "+252 61 599 8877",
+      email: "alnour@gmail.com",
+      address: "Bakaaro Market, Muqdisho",
+      contact_person: "Bashiir Cali",
+      opening_balance: 0.0,
+      active: true,
+      created_at: new Date().toISOString(),
+    },
+  ],
+  supplier_balances: [
+    {
+      supplier_id: "sup-dubai",
+      name: "Dubai General Trading LLC",
+      phone: "+971 4 223 3445",
+      contact_person: "Khaalid Cumar",
+      current_balance: 0.0,
+      total_purchases: 0.0,
+      total_paid: 0.0,
+      active: true,
+    },
+    {
+      supplier_id: "sup-mogadishu",
+      name: "Al-Nour Electronics Wholesale",
+      phone: "+252 61 599 8877",
+      contact_person: "Bashiir Cali",
+      current_balance: 0.0,
+      total_purchases: 0.0,
+      total_paid: 0.0,
+      active: true,
+    },
+  ],
   orders: [],
+  orders_overview: [],
   order_items: [],
   deliveries: [],
+  deliveries_overview: [],
+  delivery_events: [],
+  delivery_zones: [],
+  delivery_rates: [],
+  cargo_rates: [],
   financial_rules: [],
   financial_transactions: [],
   account_transfers: [],
+  sales_returns: [],
+  sales_return_items: [],
+  purchase_returns: [],
+  purchase_return_items: [],
+  inventory_movements: [],
+  product_categories: [
+    { id: "cat-smartphones", name: "Smartphones", description: "Mobile phones and handsets" },
+    {
+      id: "cat-audio",
+      name: "Audio & Wearables",
+      description: "Headphones, earbuds and smartwatches",
+    },
+    { id: "cat-accessories", name: "Accessories", description: "Power banks, chargers and cables" },
+  ],
+  product_brands: [
+    { id: "brand-samsung", name: "Samsung", description: "Samsung Electronics" },
+    { id: "brand-apple", name: "Apple", description: "Apple Inc." },
+    { id: "brand-xiaomi", name: "Xiaomi", description: "Xiaomi Corporation" },
+    { id: "brand-anker", name: "Anker", description: "Anker Innovations" },
+  ],
+  daily_financial_states: [],
   expense_report: [],
   income_report: [],
   profit_loss_report: [],

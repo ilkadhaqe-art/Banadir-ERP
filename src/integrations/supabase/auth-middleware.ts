@@ -31,7 +31,8 @@ function createSupabaseFetch(supabaseKey: string): typeof fetch {
   };
 }
 
-import { createMockSupabase } from "@/lib/mock-supabase";
+import { getDatabase } from "@/backend/db/database";
+import { createSqlSupabaseAdapter } from "@/backend/adapter";
 
 export const requireSupabaseAuth = createMiddleware({ type: "function" }).server(
   async ({ next }) => {
@@ -46,12 +47,13 @@ export const requireSupabaseAuth = createMiddleware({ type: "function" }).server
     const token = authHeader.startsWith("Bearer ") ? authHeader.replace("Bearer ", "") : "";
 
     if (isMockMode || token === "demo_token") {
-      const mock = createMockSupabase();
+      const db = await getDatabase();
+      const sqlAdapter = createSqlSupabaseAdapter(db);
       return next({
         context: {
-          supabase: mock as unknown as DatabaseClient,
-          userId: "demo-user-1",
-          claims: { sub: "demo-user-1", email: "admin@banadir.com" },
+          supabase: sqlAdapter as unknown as DatabaseClient,
+          userId: "user-admin-1",
+          claims: { sub: "user-admin-1", email: "admin@banadir.com" },
         },
       });
     }
