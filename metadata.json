@@ -1,0 +1,6 @@
+{
+  "name": "Banadir Online FOS",
+  "description": "Operational and financial management system for sales, logistics, inventory, and procurement.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

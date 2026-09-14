@@ -1,0 +1,1 @@
+REVOKE ALL ON FUNCTION public.product_price_history_log() FROM PUBLIC, anon, authenticated;

@@ -1,0 +1,1 @@
+GRANT EXECUTE ON FUNCTION public.rebuild_financial_chain(date) TO authenticated;
