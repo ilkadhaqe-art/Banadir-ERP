@@ -101,6 +101,15 @@ export type OrderOverview = {
   delivery_status: DeliveryStatus | null;
   driver_id: string | null;
   driver_name: string | null;
+  driver_phone?: string | null;
+  portal_token?: string | null;
+  portal_enabled?: boolean | null;
+  payment_status?: string | null;
+  payment_method?: string | null;
+  payment_ref?: string | null;
+  advance_payment?: number | null;
+  remaining_balance?: number | null;
+  delivery_stage?: string | null;
 };
 
 export type OrderItemDetail = {

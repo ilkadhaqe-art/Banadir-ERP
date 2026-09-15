@@ -1,6 +1,15 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { ClipboardList, Search, Truck, XCircle } from "lucide-react";
+import {
+  CheckCircle2,
+  ClipboardList,
+  Copy,
+  ExternalLink,
+  Search,
+  Truck,
+  XCircle,
+} from "lucide-react";
 import { useMemo, useState } from "react";
+import { toast } from "sonner";
 
 import { Panel, StatTile } from "@/components/command-center/Panel";
 import { ConvertOrderDialog } from "@/components/logistics/ConvertOrderDialog";
@@ -22,6 +31,11 @@ import { useCancelOrder, useOrders, useUpdateOrderStatus } from "@/hooks/useLogi
 import { formatDate, formatMoney, formatNumber } from "@/lib/format";
 import type { OrderOverview } from "@/lib/logistics-types";
 import { FULFILLMENT_LABELS, ORDER_STATUS_META } from "@/lib/logistics-types";
+import {
+  adminConfirmPayment,
+  getOrderPortalData,
+  syncOrderToPortal,
+} from "@/lib/order-portal-service";
 
 export const Route = createFileRoute("/_authenticated/orders")({
   head: () => ({
@@ -166,13 +180,19 @@ function OrdersPage() {
                     <th className="px-3 py-2 text-right font-semibold">Items</th>
                     <th className="px-3 py-2 text-right font-semibold">Total</th>
                     <th className="px-3 py-2 font-semibold">Status</th>
+                    <th className="px-3 py-2 font-semibold">Payment</th>
                     <th className="px-3 py-2 font-semibold">Delivery</th>
+                    <th className="px-3 py-2 font-semibold">Portal Link</th>
                     <th className="px-4 py-2 text-right font-semibold">Actions</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-border">
                   {rows.map((order) => {
                     const closed = order.status === "converted" || order.status === "cancelled";
+                    const portal = syncOrderToPortal(order);
+                    const origin = typeof window !== "undefined" ? window.location.origin : "";
+                    const portalUrl = `${origin}/order/${portal.portal_token}`;
+
                     return (
                       <tr
                         key={order.id}
@@ -211,9 +231,70 @@ function OrdersPage() {
                             {ORDER_STATUS_META[order.status].label}
                           </Badge>
                         </td>
+                        <td className="px-3 py-2.5" onClick={(e) => e.stopPropagation()}>
+                          <div className="flex items-center gap-1.5">
+                            <Badge
+                              variant="outline"
+                              className={
+                                portal.payment_status === "verified"
+                                  ? "border-emerald-300 bg-emerald-50 text-emerald-700"
+                                  : portal.payment_status === "pending_verification"
+                                    ? "border-amber-300 bg-amber-50 text-amber-700 font-semibold"
+                                    : "border-slate-300 bg-slate-50 text-slate-600"
+                              }
+                            >
+                              {portal.payment_status === "verified"
+                                ? "Paid"
+                                : portal.payment_status === "pending_verification"
+                                  ? "Pending Verify"
+                                  : "Unpaid"}
+                            </Badge>
+                            {portal.payment_status === "pending_verification" && (
+                              <Button
+                                size="sm"
+                                variant="outline"
+                                className="h-6 px-1.5 text-[10px] font-bold text-emerald-700 hover:bg-emerald-50"
+                                onClick={() => {
+                                  adminConfirmPayment(order.id, order.total);
+                                  toast.success(`Payment verified for ${order.order_no}`);
+                                }}
+                              >
+                                <CheckCircle2 className="size-3" /> Verify
+                              </Button>
+                            )}
+                          </div>
+                        </td>
                         <td className="whitespace-nowrap px-3 py-2.5 text-muted-foreground">
                           {order.delivery_no ?? "—"}
                           {order.driver_name ? ` · ${order.driver_name}` : ""}
+                        </td>
+                        <td
+                          className="whitespace-nowrap px-3 py-2.5"
+                          onClick={(e) => e.stopPropagation()}
+                        >
+                          <div className="flex items-center gap-1">
+                            <Button
+                              size="sm"
+                              variant="ghost"
+                              className="h-7 px-2 text-xs text-red-600 hover:bg-red-50"
+                              onClick={() => {
+                                navigator.clipboard.writeText(portalUrl);
+                                toast.success("Customer portal link copied!");
+                              }}
+                            >
+                              <Copy className="size-3" /> Link
+                            </Button>
+                            <Button
+                              size="icon"
+                              variant="ghost"
+                              asChild
+                              className="size-7 text-muted-foreground hover:text-foreground"
+                            >
+                              <a href={portalUrl} target="_blank" rel="noreferrer">
+                                <ExternalLink className="size-3.5" />
+                              </a>
+                            </Button>
+                          </div>
                         </td>
                         <td
                           className="whitespace-nowrap px-4 py-2 text-right"
@@ -291,7 +372,11 @@ function OrdersPage() {
         }}
         order={deliverFor}
       />
-      <OrderDetailDialog order={detailFor} onOpenChange={(open) => !open && setDetailFor(null)} />
+      <OrderDetailDialog
+        order={detailFor}
+        onOpenChange={(open) => !open && setDetailFor(null)}
+        onConvertClick={(ord) => setConvertFor(ord)}
+      />
     </div>
   );
 }

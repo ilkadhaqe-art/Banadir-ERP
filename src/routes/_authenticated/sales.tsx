@@ -1,5 +1,14 @@
-import { createFileRoute } from "@tanstack/react-router";
-import { FileText, HandCoins, Pencil, Receipt, Search, Truck, Undo2 } from "lucide-react";
+import { createFileRoute, Link } from "@tanstack/react-router";
+import {
+  ClipboardList,
+  FileText,
+  HandCoins,
+  Pencil,
+  Receipt,
+  Search,
+  Truck,
+  Undo2,
+} from "lucide-react";
 import { useMemo, useState } from "react";
 
 import { Panel, StatTile } from "@/components/command-center/Panel";
@@ -22,7 +31,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Skeleton } from "@/components/ui/skeleton";
-import { useDeliveries } from "@/hooks/useLogistics";
+import { useDeliveries, useOrders } from "@/hooks/useLogistics";
 import { useSales } from "@/hooks/useSales";
 import { formatDate, formatMoney, formatNumber } from "@/lib/format";
 import { DELIVERY_STATUS_META, FULFILLMENT_LABELS } from "@/lib/logistics-types";
@@ -55,6 +64,12 @@ const ALL = "__all__";
 function SalesPage() {
   const { data: sales, isPending, isError } = useSales({ limit: 300 });
   const { data: deliveries } = useDeliveries({ limit: 300 });
+  const { data: openOrders } = useOrders({ limit: 100 });
+
+  const openOrdersCount = useMemo(() => {
+    return (openOrders ?? []).filter((o) => o.status !== "converted" && o.status !== "cancelled")
+      .length;
+  }, [openOrders]);
 
   const [search, setSearch] = useState("");
   const [status, setStatus] = useState(ALL);
@@ -112,9 +127,21 @@ function SalesPage() {
             Every figure is produced by the sales read model and the financial engine.
           </p>
         </div>
-        <Button onClick={() => setSaleOpen(true)}>
-          <Receipt className="size-4" /> New sale
-        </Button>
+        <div className="flex items-center gap-2">
+          <Button variant="outline" asChild>
+            <Link to="/orders">
+              <ClipboardList className="size-4" /> Orders Pipeline
+              {openOrdersCount > 0 && (
+                <Badge className="ml-1.5 h-5 bg-red-600 px-1.5 text-[11px] font-bold text-white hover:bg-red-700">
+                  {openOrdersCount}
+                </Badge>
+              )}
+            </Link>
+          </Button>
+          <Button onClick={() => setSaleOpen(true)}>
+            <Receipt className="size-4" /> New sale
+          </Button>
+        </div>
       </header>
 
       <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">

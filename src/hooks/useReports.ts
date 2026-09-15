@@ -2,6 +2,8 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { toast } from "sonner";
 
+import { clearStoredPortalRecords } from "@/lib/order-portal-service";
+
 import {
   factoryReset,
   getBusinessOverview,
@@ -161,6 +163,7 @@ export function useFactoryReset() {
   return useMutation({
     mutationFn: (input: { confirm: string; include_masters?: boolean }) => fn({ data: input }),
     onSuccess: async () => {
+      clearStoredPortalRecords();
       await queryClient.invalidateQueries();
       toast.success("Factory reset complete — structure and settings preserved");
     },

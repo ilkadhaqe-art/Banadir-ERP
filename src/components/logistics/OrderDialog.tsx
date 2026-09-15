@@ -20,7 +20,8 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
-import { useProductStock } from "@/hooks/useCatalog";
+import { ProductDialog } from "@/components/catalog/ProductDialog";
+import { useProducts, useProductStock } from "@/hooks/useCatalog";
 import {
   useCargoCompanies,
   useCargoRates,
@@ -49,7 +50,8 @@ export function OrderDialog({
   open: boolean;
   onOpenChange: (open: boolean) => void;
 }) {
-  const { data: products } = useProductStock();
+  const { data: stockProducts } = useProductStock();
+  const { data: catalogProducts } = useProducts();
   const { data: customers } = useCustomers();
   const { data: balances } = useCustomerBalances();
   const { data: zones } = useDeliveryZones();
@@ -67,6 +69,7 @@ export function OrderDialog({
   const [discount, setDiscount] = useState("0");
   const [note, setNote] = useState("");
   const [lines, setLines] = useState<Line[]>([newLine()]);
+  const [productDialogOpen, setProductDialogOpen] = useState(false);
 
   useEffect(() => {
     if (!open) return;
@@ -82,7 +85,30 @@ export function OrderDialog({
     setLines([newLine()]);
   }, [open]);
 
-  const activeProducts = useMemo(() => (products ?? []).filter((p) => p.active), [products]);
+  const activeProducts = useMemo(() => {
+    const list =
+      stockProducts && stockProducts.length > 0
+        ? stockProducts.map((p) => ({
+            product_id: String(p.product_id || (p as unknown as { id?: string }).id || ""),
+            name: p.name || "Product",
+            sku: p.sku || "",
+            stock_on_hand: Number(p.stock_on_hand ?? 0),
+            sell_price: Number(p.sell_price ?? 0),
+            is_low_stock: Boolean(p.is_low_stock),
+            active: p.active !== false,
+          }))
+        : (catalogProducts ?? []).map((p) => ({
+            product_id: String(p.id || (p as unknown as { product_id?: string }).product_id || ""),
+            name: p.name || "Product",
+            sku: p.sku || "",
+            stock_on_hand: Number(p.opening_stock ?? 0),
+            sell_price: Number(p.sell_price ?? 0),
+            is_low_stock: Number(p.opening_stock ?? 0) <= Number(p.reorder_level ?? 0),
+            active: p.active !== false,
+          }));
+
+    return list.filter((p) => p.active && p.product_id.trim() !== "");
+  }, [stockProducts, catalogProducts]);
 
   /** Receivables headroom for the chosen customer, straight from the balance view. */
   const customerBalance = useMemo(
@@ -205,15 +231,43 @@ export function OrderDialog({
           <div className="space-y-2">
             <div className="flex items-center justify-between">
               <Label>Items</Label>
-              <Button
-                type="button"
-                size="sm"
-                variant="outline"
-                onClick={() => setLines((r) => [...r, newLine()])}
-              >
-                <Plus className="size-4" /> Add line
-              </Button>
+              <div className="flex items-center gap-2">
+                <Button
+                  type="button"
+                  size="sm"
+                  variant="outline"
+                  onClick={() => setProductDialogOpen(true)}
+                >
+                  <Plus className="size-3.5 mr-1" /> New product
+                </Button>
+                <Button
+                  type="button"
+                  size="sm"
+                  variant="outline"
+                  onClick={() => setLines((r) => [...r, newLine()])}
+                >
+                  <Plus className="size-3.5 mr-1" /> Add line
+                </Button>
+              </div>
             </div>
+
+            {activeProducts.length === 0 ? (
+              <div className="flex items-center justify-between rounded-lg border border-amber-500/30 bg-amber-500/10 p-3 text-xs text-amber-800 dark:text-amber-300">
+                <span>
+                  Ma jiraan alaabooyin la doorto. Fadlan guji &quot;New product&quot; si aad alaab
+                  cusub ugu darto.
+                </span>
+                <Button
+                  type="button"
+                  size="sm"
+                  variant="secondary"
+                  className="h-7 text-xs"
+                  onClick={() => setProductDialogOpen(true)}
+                >
+                  <Plus className="mr-1 size-3" /> New product
+                </Button>
+              </div>
+            ) : null}
             {lines.map((line) => {
               const selected = activeProducts.find((p) => p.product_id === line.product_id);
               return (
@@ -236,11 +290,18 @@ export function OrderDialog({
                         <SelectValue placeholder="Select product" />
                       </SelectTrigger>
                       <SelectContent>
-                        {activeProducts.map((p) => (
-                          <SelectItem key={p.product_id} value={p.product_id}>
-                            {p.name} · {p.sku} · {formatNumber(Number(p.stock_on_hand))} in stock
+                        {activeProducts.length === 0 ? (
+                          <SelectItem disabled value="__empty__">
+                            No products found (Add products first)
                           </SelectItem>
-                        ))}
+                        ) : (
+                          activeProducts.map((p) => (
+                            <SelectItem key={p.product_id} value={p.product_id}>
+                              {p.name} · {formatMoney(Number(p.sell_price))} ·{" "}
+                              {formatNumber(Number(p.stock_on_hand ?? 0))} in stock
+                            </SelectItem>
+                          ))
+                        )}
                       </SelectContent>
                     </Select>
                     {selected ? (
@@ -424,6 +485,7 @@ export function OrderDialog({
           </DialogFooter>
         </form>
       </DialogContent>
+      <ProductDialog open={productDialogOpen} onOpenChange={setProductDialogOpen} />
     </Dialog>
   );
 }
